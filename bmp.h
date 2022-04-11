@@ -1,3 +1,5 @@
+// Reading and Writing uncompressed BMP images
+
 #define DATA_OFFSET_OFFSET		0x000A
 #define WIDTH_OFFSET			0x0012
 #define HEIGHT_OFFSET			0x0016
@@ -27,12 +29,37 @@ typedef struct
 	byte r;	// Red
 } PixelRGB24;
 
-void ReadImage
+typedef PixelRGB24 *Image;
+
+typedef double Filter3x3[3][3];
+
+int ImageSize
+(
+	int32 width,
+	int32 height,
+	int32 bytesPerPixel
+);
+
+Image AllocateImage
+(
+	int32 width,			// Integer variable to store the width of the image in pixels
+	int32 height,			// Integer variable to store the height of the image in pixels 
+	int32 bytesPerPixel		// Integer variable to store the number of bytes per pixel used in the image
+);
+
+int ImageIndex
+(
+	int32 width,			// width (columns)
+	int32 height,			// height (rows)
+	int32 r,				// row
+	int32 c					// column
+);
+
+Image ReadImage
 (
 	// Inputs
 	const char* fileName,	// The name of the file to open (*.BMP) 
 	// Outputs
-	byte** pixels,			// Pointer to a byte array. This will contain the pixel data 
 	int32* width,			// Integer variable to store the width of the image in pixels
 	int32* height,			// Integer variable to store the height of the image in pixels 
 	int32* bytesPerPixel	// Integer variable to store the number of bytes per pixel used in the image
@@ -41,8 +68,16 @@ void ReadImage
 void WriteImage
 (
 	const char* fileName,	// The name of the file to save  
-	byte* pixels,			// Pointer to the pixel data array 
+	Image img,				// Pointer to the pixel data array 
 	int32 width,			// The width of the image in pixels
 	int32 height,			// The height of the image in pixels
 	int32 bytesPerPixel		// The number of bytes per pixel that are used in the image
+);
+
+Image ApplyFilter
+(
+	Image		img,
+	int32		width,
+	int32		height,
+	Filter3x3	ftr
 );

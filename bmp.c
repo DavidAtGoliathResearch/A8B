@@ -1,14 +1,52 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 #include <math.h>
 #include "bmp.h"
 
-void ReadImage
+int ImageSize
+(
+	int32 width,
+	int32 height,
+	int32 bytesPerPixel
+)
+{
+	return width * height * bytesPerPixel;
+}
+
+Image AllocateImage
+(
+	int32 width,			// Integer variable to store the width of the image in pixels
+	int32 height,			// Integer variable to store the height of the image in pixels 
+	int32 bytesPerPixel		// Integer variable to store the number of bytes per pixel used in the image
+)
+{
+	int TotalSize = ImageSize(width, height, bytesPerPixel);
+	Image img = malloc(TotalSize);
+	if (img == NULL)
+		printf("Insufficient memory available\n");
+	else
+		memset(img, 0, TotalSize);
+
+	return img;
+}
+
+int ImageIndex
+(
+	int32 width,			// width (columns)
+	int32 height,			// height (rows)
+	int32 r,				// row
+	int32 c					// column
+)
+{
+	return (height - 1 - r) * width + c;
+}
+
+Image ReadImage
 (
 	// Inputs
 	const char* fileName,	// The name of the file to open (*.BMP) 
 	// Outputs
-	byte** pixels,			// Pointer to a byte array. This will contain the pixel data 
 	int32* width,			// Integer variable to store the width of the image in pixels
 	int32* height,			// Integer variable to store the height of the image in pixels 
 	int32* bytesPerPixel	// Integer variable to store the number of bytes per pixel used in the image
@@ -43,39 +81,36 @@ void ReadImage
 	//We calculate the padded row size in bytes
 	int paddedRowSize = (int)(4 * ceil((float)(*width) / 4.0f)) * (*bytesPerPixel);
 
-	//We are not interested in the padded bytes, so we allocate memory just for
-	//the pixel data
 	int unpaddedRowSize = (*width) * (*bytesPerPixel);
 
-	//Total size of the pixel data in bytes
-	int totalSize = unpaddedRowSize * (*height);
-
 	//Get memory to store all the pixels
-	*pixels = (byte*)malloc(totalSize);
+	Image img = AllocateImage(*width, *height, *bytesPerPixel);
+
+	if (img == NULL)
+		return img;
 
 	//Read the pixel data Row by Row.
 	//Data is padded and stored bottom-up
 	//Point to the last row of our pixel array (unpadded)
-	byte* currentRowPointer = *pixels + ((*height - 1) * unpaddedRowSize);
-	for (int32 i = 0; i < *height; i++)
+	for (int32 r = 0; r < *height; r++)
 	{
 		//put file cursor in the next row from top to bottom
-		fseek(imageFile, dataOffset + (i * paddedRowSize), SEEK_SET);
+		fseek(imageFile, dataOffset + (r * paddedRowSize), SEEK_SET);
 
 		//read only unpaddedRowSize bytes (we can ignore the padding bytes)
-		fread(currentRowPointer, 1, unpaddedRowSize, imageFile);
-
-		//point to the next row (from bottom to top)
-		currentRowPointer -= unpaddedRowSize;
+		int Index = ImageIndex(*width, *height, r, 0);
+		fread(&img[Index], 1, unpaddedRowSize, imageFile);
 	}
 
 	fclose(imageFile);
+
+	return img;
 }
 
 void WriteImage
 (
 	const char* fileName,	// The name of the file to save  
-	byte* pixels,			// Pointer to the pixel data array 
+	Image img,				// Pointer to the pixel data array 
 	int32 width,			// The width of the image in pixels
 	int32 height,			// The height of the image in pixels
 	int32 bytesPerPixel		// The number of bytes per pixel that are used in the image
@@ -147,9 +182,56 @@ void WriteImage
 	for (int32 i = 0; i < height; i++)
 	{
 		//start writing from the beginning of last row in the pixel array
-		int pixelOffset = ((height - i) - 1) * unpaddedRowSize;
-		fwrite(&pixels[pixelOffset], 1, paddedRowSize, outputFile);
+		int Index = ImageIndex(width, height, i, 0);
+		fwrite(&img[Index], 1, paddedRowSize, outputFile);
 	}
 
 	fclose(outputFile);
+}
+
+Image ApplyFilter
+(
+	Image		img,
+	int32		width,
+	int32		height,
+	Filter3x3   ftr
+)
+{
+	Image fimg = AllocateImage(width, height, 3);
+
+	memcpy(fimg, img, ImageSize(width, height, 3));
+
+	for (int32 row = 1; row < height - 1; row++)
+		for (int32 col = 1; col < width - 1; col++)
+		{
+			double r = 0.0;
+			double g = 0.0;
+			double b = 0.0;
+
+			for (int i = -1; i <= 1; i++)
+				for (int j = -1; j <= 1; j++)
+				{
+					int Idx = ImageIndex(width, height, row + i, col + j);
+
+					printf
+					(
+						"row = %d, col = %d, Idx = %d, f[%d,%d] = %f * Img(%d, %d, %d)\n",
+						row + i, col + j, Idx,
+						i, j, ftr[i+1][j+1],
+						img[Idx].r, img[Idx].g, img[Idx].b
+					);
+
+					r += ftr[i+1][j+1] * img[Idx].r;
+					g += ftr[i+1][j+1] * img[Idx].g;
+					b += ftr[i+1][j+1] * img[Idx].b;
+				}
+
+			int Index = ImageIndex(width, height, row, col);
+
+			fimg[Index].r = (byte)round(r / 9);
+			fimg[Index].g = (byte)round(g / 9);
+			fimg[Index].b = (byte)round(b / 9);
+		}
+
+	return fimg;
 }
