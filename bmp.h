@@ -79,5 +79,7 @@ Image ApplyFilter
 	Image		img,
 	int32		width,
 	int32		height,
-	Filter3x3	ftr
+	Filter3x3	ftr,
+	double		factor,
+	double		bias
 );

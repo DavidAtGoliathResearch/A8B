@@ -178,7 +178,6 @@ void WriteImage
 	fwrite(&importantColors, 4, 1, outputFile);
 
 	//write data
-	int unpaddedRowSize = width * bytesPerPixel;
 	for (int32 i = 0; i < height; i++)
 	{
 		//start writing from the beginning of last row in the pixel array
@@ -194,7 +193,9 @@ Image ApplyFilter
 	Image		img,
 	int32		width,
 	int32		height,
-	Filter3x3   ftr
+	Filter3x3   ftr,
+	double		factor,
+	double		bias
 )
 {
 	Image fimg = AllocateImage(width, height, 3);
@@ -207,30 +208,33 @@ Image ApplyFilter
 			double r = 0.0;
 			double g = 0.0;
 			double b = 0.0;
+			int Idx = 0;
 
 			for (int i = -1; i <= 1; i++)
 				for (int j = -1; j <= 1; j++)
 				{
-					int Idx = ImageIndex(width, height, row + i, col + j);
+					Idx = ImageIndex(width, height, row + i, col + j);
 
-					printf
-					(
-						"row = %d, col = %d, Idx = %d, f[%d,%d] = %f * Img(%d, %d, %d)\n",
-						row + i, col + j, Idx,
-						i, j, ftr[i+1][j+1],
-						img[Idx].r, img[Idx].g, img[Idx].b
-					);
+					double k = ftr[i + 1][j + 1];
 
-					r += ftr[i+1][j+1] * img[Idx].r;
-					g += ftr[i+1][j+1] * img[Idx].g;
-					b += ftr[i+1][j+1] * img[Idx].b;
+					//printf
+					//(
+					//	"Idx[%d, %d] = %d, f[%d,%d] = %f * Img(%d, %d, %d)\n",
+					//	row + i, col + j, Idx,
+					//	i, j, k,
+					//	img[Idx].r, img[Idx].g, img[Idx].b
+					//);
+
+					r += k * img[Idx].r;
+					g += k * img[Idx].g;
+					b += k * img[Idx].b;
 				}
 
-			int Index = ImageIndex(width, height, row, col);
+			Idx = ImageIndex(width, height, row, col);
 
-			fimg[Index].r = (byte)round(r / 9);
-			fimg[Index].g = (byte)round(g / 9);
-			fimg[Index].b = (byte)round(b / 9);
+			fimg[Idx].r = (byte)round(factor * (r / 9) + bias);
+			fimg[Idx].g = (byte)round(factor * (g / 9) + bias);
+			fimg[Idx].b = (byte)round(factor * (b / 9) + bias);
 		}
 
 	return fimg;

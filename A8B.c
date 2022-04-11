@@ -1,8 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "bmp.h"
 
 // https://en.wikipedia.org/wiki/BMP_file_format
+
+Filter3x3 Copy =
+{
+	{0, 0, 0},
+	{0, 9, 0},
+	{0, 0, 0}
+};
 
 Filter3x3 Blur =
 {
@@ -14,7 +22,7 @@ Filter3x3 Blur =
 Filter3x3 Sharpen =
 {
 	{-1, -1, -1},
-	{-1, +9, -1},
+	{-1, +17, -1},
 	{-1, -1, -1}
 };
 
@@ -25,53 +33,62 @@ void PrintFilter(Filter3x3 ftr)
 			printf("Filter[%d, %d] = %f\n", i, j, ftr[i][j]);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 	Image Img = NULL;
 	int32 width;
 	int32 height;
 	int32 bytesPerPixel;
 
-	printf("<<Blur Filter>>\n");
-	PrintFilter(Blur);
+	//printf("<<Copy Filter>>\n");
+	//PrintFilter(Copy);
+	//printf("<<Blur Filter>>\n");
+	//PrintFilter(Blur);
+	//printf("<<Sharpen Filter>>\n");
+	//PrintFilter(Sharpen);
 
-	Img = ReadImage("BadDog.bmp", &width, &height, &bytesPerPixel);
+	if (argc < 4)
+	{
+		printf("Usage: A8B <input-image> <output-image> [C(opy) | B(lur) | S(harpen)]\n");
+		return 1;
+	}
+
+	Img = ReadImage(argv[1], &width, &height, &bytesPerPixel);
 	if (bytesPerPixel != 3)
 	{
 		printf("Unsupported BMP format with %d bytes per pixel!", bytesPerPixel);
-		return 1;
+		return 2;
 	}
 
 	if (Img == NULL)
 	{
-		printf("Image is too big!");
-		return 2;
+		printf("Image is too big (or memory is scarce)!");
+		return 3;
 	}
-	
-	Image BlurImg = ApplyFilter(Img, width, height, Blur);
 
-	// Compare Img and BlurImg
+	Filter3x3* f;
+	switch (toupper(argv[3][0]))
+	{
+	case 'C':
+		f = Copy;
+		break;
+	case 'B':
+		f = Blur;
+		break;
+	case 'S':
+		f = Blur;
+		break;
+	default:
+		printf("Unknown filter %s!", argv[3]);
+		return 4;
+	}
 
-	for (int32 row = 0; row < height; row++)
-		for (int32 col = 0; col < width; col++)
-		{
-			int Index = ImageIndex(width, height, row, col);
+	Image OutImg = ApplyFilter(Img, width, height, *f, 1, 0);
 
-			if (abs(Img[Index].r - BlurImg[Index].r) > 5)
-				printf
-				(
-					"row = %d, col = %d, Index = %d, Img(%d, %d, %d) <> BlurImg(%d, %d, %d)\n",
-					row, col, Index, 
-					Img[Index].r, Img[Index].g, Img[Index].b,
-					BlurImg[Index].r, BlurImg[Index].g, BlurImg[Index].b
-				);
-		}
-
-	WriteImage("BadDogCopy.bmp", Img, width, height, bytesPerPixel);
-	WriteImage("BadDogBlur.bmp", BlurImg, width, height, bytesPerPixel);
+	WriteImage(argv[2], OutImg, width, height, bytesPerPixel);
 
 	free(Img);
-	free(BlurImg);
+	free(OutImg);
 
 	return 0;
 }
