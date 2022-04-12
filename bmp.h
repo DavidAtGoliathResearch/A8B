@@ -14,7 +14,7 @@ typedef unsigned int int32;
 typedef short int16;
 typedef unsigned char byte;
 
-// The 8 - bit per pixel(8bpp) format supports 256 distinct colors and stores 1 pixel per 1 byte.Each byte is an index into a table of up to 256 colors.
+// The  8 - bit per pixel(8bpp) format supports 256 distinct colors and stores 1 pixel per 1 byte.Each byte is an index into a table of up to 256 colors.
 // The 16 - bit per pixel(16bpp) format supports 65536 distinct colors and stores 1 pixel per 2 - byte WORD.Each WORD can define the alpha, red, greenand blue samples of the pixel.
 // The 24 - bit per pixel(24bpp) format supports 16, 777, 216 distinct colors and stores 1 pixel value per 3 bytes.
 //   Each pixel value defines the Red, Green and Blue samples of the pixel(8.8.8.0.0 in RGBAX notation).
@@ -60,9 +60,9 @@ Image ReadImage
 	// Inputs
 	const char* fileName,	// The name of the file to open (*.BMP) 
 	// Outputs
-	int32* width,			// Integer variable to store the width of the image in pixels
-	int32* height,			// Integer variable to store the height of the image in pixels 
-	int32* bytesPerPixel	// Integer variable to store the number of bytes per pixel used in the image
+	int32* width,			// Integer variable - width of the image in pixels
+	int32* height,			// Integer variable - height of the image in pixels 
+	int32* bytesPerPixel	// Integer variable - number of bytes per pixel in the image
 );
 
 void WriteImage
@@ -71,7 +71,7 @@ void WriteImage
 	Image img,				// Pointer to the pixel data array 
 	int32 width,			// The width of the image in pixels
 	int32 height,			// The height of the image in pixels
-	int32 bytesPerPixel		// The number of bytes per pixel that are used in the image
+	int32 bytesPerPixel		// The number of bytes per pixel in the image
 );
 
 Image ApplyFilter

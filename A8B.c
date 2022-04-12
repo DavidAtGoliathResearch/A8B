@@ -40,13 +40,6 @@ int main(int argc, char *argv[])
 	int32 height;
 	int32 bytesPerPixel;
 
-	//printf("<<Copy Filter>>\n");
-	//PrintFilter(Copy);
-	//printf("<<Blur Filter>>\n");
-	//PrintFilter(Blur);
-	//printf("<<Sharpen Filter>>\n");
-	//PrintFilter(Sharpen);
-
 	if (argc < 4)
 	{
 		printf("Usage: A8B <input-image> <output-image> [C(opy) | B(lur) | S(harpen)]\n");

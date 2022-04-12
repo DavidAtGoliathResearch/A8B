@@ -16,9 +16,9 @@ int ImageSize
 
 Image AllocateImage
 (
-	int32 width,			// Integer variable to store the width of the image in pixels
-	int32 height,			// Integer variable to store the height of the image in pixels 
-	int32 bytesPerPixel		// Integer variable to store the number of bytes per pixel used in the image
+	int32 width,			// Integer variable - width of the image in pixels
+	int32 height,			// Integer variable - height of the image in pixels 
+	int32 bytesPerPixel		// Integer variable - number of bytes per pixel in the image
 )
 {
 	int TotalSize = ImageSize(width, height, bytesPerPixel);
@@ -47,9 +47,9 @@ Image ReadImage
 	// Inputs
 	const char* fileName,	// The name of the file to open (*.BMP) 
 	// Outputs
-	int32* width,			// Integer variable to store the width of the image in pixels
-	int32* height,			// Integer variable to store the height of the image in pixels 
-	int32* bytesPerPixel	// Integer variable to store the number of bytes per pixel used in the image
+	int32* width,			// Integer variable - width of the image in pixels
+	int32* height,			// Integer variable - height of the image in pixels 
+	int32* bytesPerPixel	// Integer variable - number of bytes per pixel in the image
 )
 {
 	//Open the file for reading in binary mode
@@ -113,7 +113,7 @@ void WriteImage
 	Image img,				// Pointer to the pixel data array 
 	int32 width,			// The width of the image in pixels
 	int32 height,			// The height of the image in pixels
-	int32 bytesPerPixel		// The number of bytes per pixel that are used in the image
+	int32 bytesPerPixel		// The number of bytes per pixel in the image
 )
 {
 	//Open file in binary mode
