@@ -23,9 +23,7 @@ Image AllocateImage
 {
 	int TotalSize = ImageSize(width, height, bytesPerPixel);
 	Image img = malloc(TotalSize);
-	if (img == NULL)
-		printf("Insufficient memory available\n");
-	else
+	if (img != NULL)
 		memset(img, 0, TotalSize);
 
 	return img;

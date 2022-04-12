@@ -19,6 +19,13 @@ Filter3x3 Blur =
 	{1, 1, 1}
 };
 
+Filter3x3 Grey =
+{
+	{1, 1, 1},
+	{1, 1, 1},
+	{1, 1, 1}
+};
+
 Filter3x3 Sharpen =
 {
 	{-1, -1, -1},
@@ -39,10 +46,12 @@ int main(int argc, char *argv[])
 	int32 width;
 	int32 height;
 	int32 bytesPerPixel;
+	double factor = 1.0;
+	double bias = 0.0;
 
 	if (argc < 4)
 	{
-		printf("Usage: A8B <input-image> <output-image> [C(opy) | B(lur) | S(harpen)]\n");
+		printf("Usage: A8B <input-image> <output-image> [C(opy) | B(lur) | S(harpen)] [<factor> [<bias>]]\n");
 		return 1;
 	}
 
@@ -59,17 +68,26 @@ int main(int argc, char *argv[])
 		return 3;
 	}
 
+	if (argc > 4)
+		factor = atof(argv[4]);
+
+	if (argc > 5)
+		bias = atof(argv[5]);
+
 	Filter3x3* f;
 	switch (toupper(argv[3][0]))
 	{
 	case 'C':
-		f = Copy;
+		f = &Copy;
 		break;
 	case 'B':
-		f = Blur;
+		f = &Blur;
+		break;
+	case 'G':
+		f = &Grey;
 		break;
 	case 'S':
-		f = Blur;
+		f = &Sharpen;
 		break;
 	default:
 		printf("Unknown filter %s!", argv[3]);
